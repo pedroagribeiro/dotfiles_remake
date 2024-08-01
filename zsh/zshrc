@@ -1,0 +1,67 @@
+#              _
+#             | |
+#      _______| |__  _ __ ___
+#     |_  / __| '_ \| '__/ __|
+#    _ / /\__ \ | | | | | (__
+#   (_)___|___/_| |_|_|  \___|
+
+export RUSTPATH="$HOME/.asdf/install/rust/1.68.0"
+export GPG_TTY=$(tty)
+export DOTFILES="$HOME/.dotfiles"
+export PATH="$HOME/.local/bin:$PATH"
+export GOROOT="$HOME/.asdf/installs/golang/1.20/go"
+export PATH=$PATH:$GOROOT/bin
+export PATH=$PATH:$RUSTPATH/bin
+export PATH=$(go env GOPATH)/bin:$PATH
+
+# Load general zsh modules
+for module in $(ls $DOTFILES/zsh/*.zsh); do
+    source $module
+done
+
+# Load Alticelabs zsh modules
+if [[ -d "$DOTFILES/alticelabs/zsh" ]]; then
+    for module in $(ls $DOTFILES/alticelabs/zsh/*.zsh); do
+        source $module
+    done
+fi
+
+# Source general aliases
+source $DOTFILES/zsh/aliases.zsh
+# Source AlticeLabs aliases
+if [[ -f "$DOTFILES/alticelabs/zsh/aliases.zsh" ]]; then
+    source $DOTFILES/alticelabs/zsh/aliases.zsh
+fi
+
+# go to working directory if it has one
+gtwd
+
+# direnv
+eval "$(direnv hook zsh)"
+
+# for init_file in $(ls $DOTFILES/**/*.init); do
+#   source $init_file
+# done
+
+# Docker atomatic initialization
+# Ensure Docker is running on WSL 2. This expects you've installed Docker and
+# Docker Compose directly within your WSL distro instead of Docker Desktop.
+if grep -q "microsoft" /proc/version > /dev/null 2>&1; then
+    DOCKER_DIR=/mnt/wsl/shared-docker
+    DOCKER_SOCK="$DOCKER_DIR/docker.sock"
+    export DOCKER_HOST="unix://$DOCKER_SOCK"
+    if [ ! -S "$DOCKER_SOCK" ]; then
+        mkdir -pm o=,ug=rwx "$DOCKER_DIR"
+        sudo chgrp docker "$DOCKER_DIR"
+        /mnt/c/Windows/System32/wsl.exe -d $WSL_DISTRO_NAME sh -c "nohup sudo -b dockerd < /dev/null > $DOCKER_DIR/dockerd.log 2>&1"
+    fi
+fi
+
+# Change docker host to podman
+# export DOCKER_HOST='unix:///Users/pedro/.local/share/containers/podman/machine/podman-machine-default/podman.sock'
+
+# Launch Startship
+# eval "$(starship init zsh)"
+
+# Launch zellij
+# eval "$(zellij setup --generate-auto-start zsh)"
