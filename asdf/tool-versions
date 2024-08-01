@@ -1,0 +1,5 @@
+golang 1.20
+java openjdk-17
+nodejs lts
+python 3.10.4
+rust 1.68.0
